@@ -8,6 +8,8 @@ app.set('view engine', 'ejs');
 
 var UserController = require('./user/UserController');
 var AuthController = require('./auth/AuthController');
+var UploadController = require('./upload/UploadController')
 app.use('/users', UserController);
 app.use('/auth',  AuthController);
+app.use('/upload', UploadController);
 module.exports = app;
