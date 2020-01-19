@@ -1,6 +1,7 @@
 // User.JS
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+const ObjectId = require('mongoose').Types.ObjectId;
 
 var UserSchema = new Schema({
   username  : {
@@ -15,6 +16,10 @@ var UserSchema = new Schema({
   password  : {
     type: String,
     required: true},
+  collections:[
+    {type: ObjectId, ref: 'Collection'}
+  ],
+  postnum: 0,
 })
 
 // FIND BY USERNAME METHOD

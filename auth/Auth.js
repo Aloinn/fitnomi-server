@@ -39,7 +39,7 @@ verify = (req, res, next)=>{
     if(err){return res.status(500).send({auth: false, message:'Failed to authenticate'})};
     User.findById({_id: ObjectId(decoded.id)}, (err, user)=>{
       if(err||!user){return res.status(404).send({auth:false, message:'Error!'})}
-      req.body.id = user._id;
+      req.body = { id: user._id};
       next();
     })
   })
