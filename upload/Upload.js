@@ -15,17 +15,16 @@ const s3 = new AWS.S3();
 
 uploadFile = (source, targetName, res)=>{
   fs.readFile(source, (err, filedata)=>{
-      const putParams = {
-        Bucket: config.bucket_name,
-        Key: targetName,
-        Body: filedata
-      }
-      s3.putObject(putParams, (err, data)=>{
-          fs.unlink(source, (err)=>{});
-          return('good')
-          req.body={success:true,err:err}
-      })
+    const putParams = {
+      Bucket: config.bucket_name,
+      Key: targetName,
+      Body: filedata
     }
+    s3.putObject(putParams, (err, data)=>{
+        fs.unlink(source, (err)=>{});
+        return('good')
+        req.body={success:true,err:err}
+    })
   });
 }
 

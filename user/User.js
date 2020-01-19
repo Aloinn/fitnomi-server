@@ -16,8 +16,8 @@ var UserSchema = new Schema({
   password  : {
     type: String,
     required: true},
-  collections:[
-    {type: ObjectId, ref: 'Collection'}
+  sets:[
+    {type: ObjectId, ref: 'Set'}
   ],
   postnum: 0,
 })

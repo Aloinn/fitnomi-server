@@ -1,8 +1,9 @@
 // User.JS
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const ObjectId = require('mongoose').Types.ObjectId;
 
-const CollectionSchema = new Schema({
+const SetSchema = new Schema({
   name:{
     type: String,
     maxlength: 20,
@@ -12,10 +13,12 @@ const CollectionSchema = new Schema({
     maxlength: 400,
     required: true},
   user: String,
-  images: [String],
-  }
+  images: [
+    {type: ObjectId, ref: 'Image'}
+  ],
+  image: String,
 })
 
 // FIND BY EMAIL METHOD
-var Collection = mongoose.model('User', CollectionSchema);
-module.exports = Collection
+var Set = mongoose.model('Set', SetSchema);
+module.exports = Set

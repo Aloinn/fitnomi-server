@@ -1,9 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const Auth = require('../auth/Auth')
-const User = require('../user/User')
 const ObjectId = require('mongoose').Types.ObjectId;
+const User = require('../user/User')
+const Image = require('../content/Image');
+const Set = require('../content/Set');
+/*
+const bodyParser = require('body-parser')
+const formData = require('express-form-data')
 
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({extended:true}));
+router.use(formData.parse())
+*/
 // File uploading middleware
 const multer = require('multer')
 const storage = multer.diskStorage({
@@ -12,49 +21,64 @@ const storage = multer.diskStorage({
     cb(null, file.originalname)
   }
 })
-//const _upload = multer({ storage: storage }).single('file1')
-/*
-const _upload = multer({ storage: storage }).fields([
-  {name: 'head', maxCount:1},
-  {name: '1pic', maxCount:1},
-  {name: '2pic', maxCount:1},
-  {name: '3pic', maxCount:1},
-  {name: '4pic', maxCount:1},
-  {name: '5pic', maxCount:1},
-  {name: '6pic', maxCount:1},
-  {name: '7pic', maxCount:1},
+const uploadFiles = multer({ storage: storage }).fields('images')
 
-])*/
-const uploadFiles = multer({ storage: storage }).array('images')
-
+// Upload functions
 const Upload = require('./Upload')
 
 // ROUTES
 router.get('/get_file/:file_name',(req,res)=>{
   Upload.retrieveFile(req.params.file_name, res);
 });
+router.post('/test',(req,res)=>{console.log(req.body)})
 
 router.post('/post', Auth.verify, (req, res)=>{
-  var pics = []
-  var errs = []
   var num = 0;
+  let id = req.body.id
   // MAKES UNIQUE ID BASED ON HOW MANY POSTS USER HAS
-  User.findById({_id: ObjectId(req.body.id)}, (err, user)=>{
-    num = user.collections.length.postnum;
-    user.collections.length.postnum += 1;
+  User.findById({_id: ObjectId(id)}, (err, user)=>{
+    num = user.sets.length.postnum;
+    user.sets.length.postnum += 1;
   })
   // FOLDER IS EQUAL TO USER ID + COLLECTION POST #
-  var folder = req.body.id+num;
+  let folder = id+num;
 
   // GET FILES FROM FORM
   uploadFiles(req, res, (err)=>{
-    if(err){return res.status(500).send()}
+    // Take descriptions
+    let names = req.body.names;
+    let descs = req.body.descs;
 
+    if(err){return res.status(500).send()}
+    var set_id = null;
+
+    // CREATES A THUMBNAIL
+    let thumbnail = req.files.pop(0)
+    var location = folder+'/thumbnail'
+    Upload.uploadFile(thumbnail.path, location, res);
+    Set.create({
+      name: names.pop(0),
+      desc: descs.pop(0),
+      image: location,
+      images: [],
+      user: ObjectId(id),
+    }, (err, set)=>{
+      // IF SET SUCCESSFULLY CREATED, CREATE IMAGES
+      set_id = set._id;
+      for(var i=0; i<req.files.length; i++){
+        location = folder+'/'+i.toString();
+        Upload.uploadFile(req.files[i].path, location, res);
+        Image.create({
+          name      : names[i],
+          desc      : descs[i],
+          location  : location,
+          set       : ObjectId(set_id),
+        },(err,image)=>{set.images.push(ObjectId(image._id))})
+      }
+    })
     // FOR EACH FILE POST IN UNIQUE AREA
-    for(var i=0; i<req.files.length; i++){
-      response = Upload.uploadFile(req.files[i].path, folder+'/'+i.toString(), res);
-      console.log(response)
-    }
+
+    res.status(200).send("Good!")
   })
 
 })
