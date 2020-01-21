@@ -15,6 +15,16 @@ const ImageSchema = new Schema({
   set:{type: ObjectId, ref: 'Set'},
 })
 
+// PROMISE CREATE
+ImageSchema.statics.createPromise = (params) =>{
+  return new Promise((resolve, reject)=>{
+    Image.create(params,(err,image)=>{
+      if(err) {reject(err)}
+      else    {resolve(image)}
+    })
+  })
+}
+
 // FIND BY EMAIL METHOD
 var Image = mongoose.model('Image', ImageSchema);
 module.exports = Image;

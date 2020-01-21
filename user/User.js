@@ -20,6 +20,12 @@ var UserSchema = new Schema({
     {type: ObjectId, ref: 'Set'}
   ],
   postnum: 0,
+  followers:[
+    {type: ObjectId, ref: 'User'}
+  ],
+  following:[
+    {type: ObjectId, ref: 'User'}
+  ]
 })
 
 // FIND BY USERNAME METHOD

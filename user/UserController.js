@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
 const Crypto = require('crypto')
-
+const Auth = require('../auth/Auth')
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({extended:true}));
 var User = require('./User')
@@ -19,7 +19,9 @@ router.post('/', function(req, res){
   User.create({
     username  : req.body.username,
     email     : req.body.email,
-    password  : req.body.password
+    password  : req.body.password,
+    sets      : [],
+    postnum   : 0,
   },
   function(err, user){
     if(err){return res.status(500).send("There was a problem with request!")}

@@ -32,22 +32,14 @@ const Upload = require('./Upload')
 
 // ROUTES
 router.get('/get_file/:file_set/:file_name', (req,res)=>{
-
   let location = req.params.file_set+'/'+req.params.file_name
-  console.log(res.getHeaders())
-
   Upload.retrieveFile(location)
     .then((file)=>{
-      res.writeHead(200, {'Content-Type': 'image/jpeg'})
+        res.writeHead(200, {'Content-Type': 'image/jpeg'})
         res.write(file, 'binary');
         res.end(null, 'binary');
       })
     .catch((err)=>{res.status(500).send(err)})
-    /*
-  Upload.retrieveFile(location, res, ()=>{
-    console.log(res)
-    //res.render('image_resp',{title:'test'})
-  });*/
 });
 
 // TEST TEST TEST TEST TEST ES TESTEST ESS TEST ESE
@@ -55,31 +47,81 @@ router.get('/get_set/:set_id', (req,res)=>{
   res.render('test',{})
 })
 
-
-
 router.post('/post', Auth.verify, (req, res)=>{
-  var num = 0;
-  let id = req.body.id
-  // MAKES UNIQUE ID BASED ON HOW MANY POSTS USER HAS
-  User.findById({_id: ObjectId(id)}, (err, user)=>{
-    console.log(user)
-    num = user.sets.length.postnum;
-    user.sets.length.postnum += 1;
-  })
-  // FOLDER IS EQUAL TO USER ID + COLLECTION POST #
-  let folder = id+num;
+  (async () =>{
+    try{
+      // USER ID
+      const id = req.body.id;
 
-  // GET FILES FROM FORM
-  uploadFiles(req, res, (err)=>{
+      // GETS NUMBER OF POSTS FROM USER
+      const user = await new Promise((resolve, reject)=>{
+        User.findById({_id: ObjectId(id)}, (err, user)=>{
+          if(err) {reject(err)}
+          else    {resolve(user)}
+        })
+      })
+      user.postnum += 1;
+      const post_num = user.postnum;
 
-    const entries = Object.keys(req.body).length/2
-    for(var i = 0; i<entries; i++){
-      if(i==0){
+      // ASYNC UPLOADS FILES AND DATA ONE AT A TIME
+      let entries = null;
+      const data = await new Promise((resolve, reject)=>{
+          uploadFiles(req, res, (err)=>{
+          let names=[], descs=[], pics=[];
+          entries = Object.keys(req.body).length/2;
 
-      }else{
+          for(var i = 0; i<entries; i++){
+            names[i] = req.body[i.toString()+"name"]
+            descs[i] = req.body[i.toString()+"desc"]
+            pics[i] = req.files[i.toString()+'pic'][0].path
+          }
 
+          if(err) {reject(err)}
+          else    {resolve({names:names, descs:descs, pics:pics})}
+        })
+      })
+
+      // CREATE MAIN SET
+      const folder = id + post_num;
+      let location = folder +'/'+ 0
+      Upload.uploadFile(data['pics'][0], location)
+      const set = await Set.createPromise({
+        name: data['names'][0],
+        desc: data['descs'][0],
+        image: location,
+        images: [],
+        user: ObjectId(id),
+        created_on: Date.now(),
+      })
+
+      // ASYNC UPLOAD FILES
+      let uploadPromises = [];
+      let objectPromises = [];
+      for(var i = 1; i<entries; i++){
+        location = folder +'/'+ i.toString()
+        let _p1 = Upload.uploadFile(data['pics'][i], location)
+        let _p2 = Image.createPromise({
+          name    : data['names'][i],
+          desc    : data['descs'][i],
+          location: location,
+          set     : ObjectId(set._id)
+        })
+        uploadPromises.push(_p1);
+        objectPromises.push(_p2);
       }
-    }
+      await Promise.all(uploadPromises)
+      const images = await Promise.all(objectPromises)
+      set.images = images;
+
+      // SAVING AND UPDATING DATABASE
+      set.save((err)=>{})
+      user.sets.push(ObjectId(set._id))
+      user.save((err=>{}));
+      res.status(200).send()
+
+    } catch(err){console.log(err)}
+  })()
+
     /*
     // Take descriptions
     let names = req.body.names;
@@ -114,8 +156,8 @@ router.post('/post', Auth.verify, (req, res)=>{
     })
     // FOR EACH FILE POST IN UNIQUE AREA
 
-    res.status(200).send("Good!")*/
-  })
+    res.status(200).send("Good!")
+  })*/
 
 })
 
