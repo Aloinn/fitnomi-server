@@ -17,7 +17,12 @@ const SetSchema = new Schema({
     {type: ObjectId, ref: 'Image'}
   ],
   image: String,
+  created_on: Date,
 })
+
+// PROMISE GET SET
+SetSchema.statics.getSet = (set_id) =>
+{return Set.findOne({_id:ObjectId(set_id)}).lean(true).exec()}
 
 // FIND BY EMAIL METHOD
 var Set = mongoose.model('Set', SetSchema);

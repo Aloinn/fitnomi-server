@@ -5,14 +5,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const User = require('../user/User')
 const Image = require('../content/Image');
 const Set = require('../content/Set');
-/*
-const bodyParser = require('body-parser')
-const formData = require('express-form-data')
 
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({extended:true}));
-router.use(formData.parse())
-*/
 // File uploading middleware
 const multer = require('multer')
 const storage = multer.diskStorage({
@@ -21,22 +14,55 @@ const storage = multer.diskStorage({
     cb(null, file.originalname)
   }
 })
-const uploadFiles = multer({ storage: storage }).fields('images')
+
+const uploadFiles = multer({ storage: storage }).fields([
+  {name:'0pic', maxCount:1},
+  {name:'1pic', maxCount:1},
+  {name:'2pic', maxCount:1},
+  {name:'3pic', maxCount:1},
+  {name:'4pic', maxCount:1},
+  {name:'5pic', maxCount:1},
+  {name:'6pic', maxCount:1},
+  {name:'7pic', maxCount:1},
+  {name:'8pic', maxCount:1},
+])
 
 // Upload functions
 const Upload = require('./Upload')
 
 // ROUTES
-router.get('/get_file/:file_name',(req,res)=>{
-  Upload.retrieveFile(req.params.file_name, res);
+router.get('/get_file/:file_set/:file_name', (req,res)=>{
+
+  let location = req.params.file_set+'/'+req.params.file_name
+  console.log(res.getHeaders())
+
+  Upload.retrieveFile(location)
+    .then((file)=>{
+      res.writeHead(200, {'Content-Type': 'image/jpeg'})
+        res.write(file, 'binary');
+        res.end(null, 'binary');
+      })
+    .catch((err)=>{res.status(500).send(err)})
+    /*
+  Upload.retrieveFile(location, res, ()=>{
+    console.log(res)
+    //res.render('image_resp',{title:'test'})
+  });*/
 });
-router.post('/test',(req,res)=>{console.log(req.body)})
+
+// TEST TEST TEST TEST TEST ES TESTEST ESS TEST ESE
+router.get('/get_set/:set_id', (req,res)=>{
+  res.render('test',{})
+})
+
+
 
 router.post('/post', Auth.verify, (req, res)=>{
   var num = 0;
   let id = req.body.id
   // MAKES UNIQUE ID BASED ON HOW MANY POSTS USER HAS
   User.findById({_id: ObjectId(id)}, (err, user)=>{
+    console.log(user)
     num = user.sets.length.postnum;
     user.sets.length.postnum += 1;
   })
@@ -45,6 +71,16 @@ router.post('/post', Auth.verify, (req, res)=>{
 
   // GET FILES FROM FORM
   uploadFiles(req, res, (err)=>{
+
+    const entries = Object.keys(req.body).length/2
+    for(var i = 0; i<entries; i++){
+      if(i==0){
+
+      }else{
+
+      }
+    }
+    /*
     // Take descriptions
     let names = req.body.names;
     let descs = req.body.descs;
@@ -78,7 +114,7 @@ router.post('/post', Auth.verify, (req, res)=>{
     })
     // FOR EACH FILE POST IN UNIQUE AREA
 
-    res.status(200).send("Good!")
+    res.status(200).send("Good!")*/
   })
 
 })
