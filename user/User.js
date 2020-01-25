@@ -28,6 +28,17 @@ var UserSchema = new Schema({
   ]
 })
 
+// PROMISE GET DETAILS
+UserSchema.statics.getPromise = (params) =>{
+  return new Promise((resolve, reject)=>{
+    User.findOne(params,(err,user)=>{
+      if(err) {reject(err)}
+    })
+    .populate('sets', 'image')
+    .exec((err,user)=>{resolve(user)})
+  })
+}
+
 // FIND BY USERNAME METHOD
 UserSchema.statics.findByUsername = (username, callback) =>
 {return User.findOne({username: username} , callback)}

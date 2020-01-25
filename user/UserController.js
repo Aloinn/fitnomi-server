@@ -37,4 +37,12 @@ router.get('/', function(req, res){
   })
 })
 
+router.get('/:username', function(req, res){
+  (async ()=>{
+    const user = await User.getPromise({username: req.params.username})
+    if(!user){return res.status(404).send("No users exist!")}
+    res.status(200).send(user)
+  })()
+})
+
 module.exports = router;
