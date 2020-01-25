@@ -77,34 +77,3 @@ async function retrieveFile(file_name){
 
 module.exports.uploadFile = uploadFile
 module.exports.retrieveFile = retrieveFile
-
-/*
-uploadFile = (source, targetName, res)=>{
-  fs.readFile(source, (err, filedata)=>{
-    const putParams = {
-      Bucket: config.bucket_name,
-      Key: targetName,
-      Body: filedata
-    }
-    s3.putObject(putParams, (err, data)=>{
-        fs.unlink(source, (err)=>{});
-        return('good')
-        req.body={success:true,err:err}
-    })
-  });
-}
-
-retrieveFile = (filename, res, next)=>{
-  const getParams = {
-    Bucket: config.bucket_name,
-    Key: filename
-  }
-  s3.getObject(getParams, (err, data)=>{
-    if(err){return res.status(400).send({success:false, err:err})}
-    else{
-
-      return
-    } next()
-  })
-}
-*/

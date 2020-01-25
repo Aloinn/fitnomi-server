@@ -17,11 +17,15 @@ router.get('/get_file/:file_set/:file_name', (req,res)=>{
 
 // GET FULL SET
 router.get('/get_set/:set_id', (req,res)=>{
-  Set.getSet(req.params.set_id)
-    .then(_set => console.log('ys', _set))
-    .catch(err => console.log('no', err))
-  res.send(200)
-
+  (async ()=>{
+    if(!ObjectId.isValid(req.params.set_id)){
+      return res.status(400).send("No items exist!")
+    } else {
+    const set = await Set.getPromise({_id: ObjectId(req.params.set_id)})
+    if(!set){return res.status(404).send("No items exist!")}
+    res.status(200).send(set)
+    }
+  })()
 })
 
 module.exports = router;

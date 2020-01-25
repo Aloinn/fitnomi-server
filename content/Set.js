@@ -12,7 +12,7 @@ const SetSchema = new Schema({
     type: String,
     maxlength: 400,
     required: true},
-  user: {type: ObjectId, ref: 'Image'},
+  user: {type: ObjectId, ref: 'User'},
   images: [
     {type: ObjectId, ref: 'Image'}
   ],
@@ -20,9 +20,29 @@ const SetSchema = new Schema({
   created_on: Date,
 })
 
+// PROMISE GET DETAILS
+SetSchema.statics.getPromise = (params) =>{
+  return new Promise((resolve, reject)=>{
+    Set.findOne(params,(err,set)=>{
+      if(err) {reject(err)}
+    })
+    .populate('user', 'username')
+    .populate('images')
+    .exec((err,set)=>{resolve(set)})
+  })
+}
+
 // PROMISE GET SET
-SetSchema.statics.getSet = (set_id) =>
-{return Set.findOne({_id:ObjectId(set_id)}).lean(true).exec()}
+SetSchema.statics.getThumbnailPromise = (params) =>{
+  return new Promise((resolve, reject)=>{
+    Set.findOne(params,(err,set)=>{
+      if(err) {reject(err)}
+    })
+    .select('image')
+    .populate('images', 'location')
+    .exec((err,set)=>{resolve(set)})
+  })
+}
 
 // PROMISE CREATE
 SetSchema.statics.createPromise = (params) =>{
