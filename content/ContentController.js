@@ -10,8 +10,9 @@ const Set = require('../content/Set');
 // GET FEED
 router.get('/feed/', (req,res)=>{
   (async ()=>{
+    console.log('get feed')
     sets = await Set.find({}).sort({created_on: 1})
-    .populate('images')
+    .populate('images').populate('user', 'username')
     res.status(200).send(sets)
   })()
 });
