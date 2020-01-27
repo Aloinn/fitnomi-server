@@ -6,6 +6,16 @@ const User = require('../user/User')
 const Image = require('../content/Image');
 const Set = require('../content/Set');
 
+
+// GET FEED
+router.get('/feed/', (req,res)=>{
+  (async ()=>{
+    sets = await Set.find({}).sort({created_on: 1})
+    .populate('images')
+    res.status(200).send(sets)
+  })()
+});
+
 // GET FULL SET
 router.get('/get_set/:set_id', (req,res)=>{
   (async ()=>{

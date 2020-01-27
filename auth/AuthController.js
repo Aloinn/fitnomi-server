@@ -12,6 +12,7 @@ const Auth = require('./Auth')
 
 
 router.post('/login', Auth.login, (req, res)=>{
+  console.log('good!')
   res.status(200).send({
     auth: req.body.auth,
     token: req.body.token,

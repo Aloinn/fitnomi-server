@@ -4,10 +4,25 @@ const User = require('../user/User');
 const Crypto = require('crypto');
 const config = require('../config.js')
 
+function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+function validatePhone(phone) {
+    var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+    return re.test(String(phone));
+}
+
 login = (req, res, next)=>{
-  User.findOne({email: req.body.email}, (err, user)=>{
+  key = ''
+  if(validateEmail(req.body.login_id)){key='email'}
+  else if(validatePhone(req.body.login_id)){key='phone'}
+  else {key="username"}
+  if(req.body.password==null){req.body.password = req.body.login_password}
+
+  User.findOne({[key]: req.body.login_id}, (err, user)=>{
     if(err){return res.status(500).send('Server error')}
-    if(!user){return res.status(404).send('Unable to login')}
+    if(!user){return res.status(404).send('No users exist with credentials')}
 
     // Getting old password
     let passwordFields = user.password.split('$');
@@ -21,13 +36,12 @@ login = (req, res, next)=>{
 
       // USER AUTHENTICATED!
       var token = jwt.sign({id:user._id}, config.secret, {});
-      res.status(200).send({auth:true, token: token})
       req.body.auth = true;
       req.body.token = token;
       next();
     } else {
       // USER NOT AUTHENTICATED
-      return res.status(401).send({auth: false, token: null})
+      return res.status(401).send('Invalid password!')
     }
   })
 }
